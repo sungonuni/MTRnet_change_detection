@@ -5,9 +5,12 @@ from utils.parser import get_parser_with_args
 from utils.helpers import (get_loaders, get_criterion,
                            load_model, initialize_metrics, get_mean_metrics,
                            set_metrics)
+from puzzleUtils.puzzleHelpers import (split, merge)
+
 import os
 import logging
 import json
+import sys
 from tensorboardX import SummaryWriter
 from tqdm import tqdm
 import random
@@ -102,30 +105,40 @@ for epoch in range(opt.epochs):
         tbar.set_description("epoch {} info ".format(epoch) + str(batch_iter) + " - " + str(batch_iter+opt.batch_size))
         batch_iter = batch_iter+opt.batch_size
         total_step += 1
+
+        # Make quarter splited batch img (puzzle module)
+        splited_img1 = split(batch_img1)
+        splited_img2 = split(batch_img2)
+
         # Set variables for training
         batch_img1 = batch_img1.float().to(dev)
         batch_img2 = batch_img2.float().to(dev)
         labels = labels.long().to(dev)
 
+        splited_img1 = splited_img1.float().to(dev)
+        splited_img2 = splited_img2.float().to(dev)
+
         # Zero the gradient
         optimizer.zero_grad()
 
-        # Get model predictions, calculate loss, backprop
-        cd_preds = model(batch_img1, batch_img2)
-        '''
-        cd_shape = cd_preds[-1]
-        print(" ")
-        print('cd_shape: ' + str(cd_shape.shape))
-        '''
-        cd_loss = criterion(cd_preds, labels)
+        # Get model predictions, calculate loss, backprop (merging module)
+        
+        entire_preds = model(batch_img1, batch_img2) # entire_preds.shape -> tuple
+        splited_preds = model(splited_img1, splited_img2)
+        merged_preds = merge(splited_preds) # merged_preds.shape -> torchtensor
+        
+        # alpha = 0.04 * float(epoch)
+        alpha = 1
+        
+        cd_loss = criterion(entire_preds, merged_preds, labels, alpha) # must set get_criterion to 'puzzle'
         loss = cd_loss
         loss.backward()
         optimizer.step()
 
-        cd_preds = cd_preds[-1]
+        # Calculate and log other batch metrics
+        cd_preds = entire_preds[-1]
         _, cd_preds = torch.max(cd_preds, 1)
 
-        # Calculate and log other batch metrics
         cd_corrects = (100 *
                        (cd_preds.squeeze().byte() == labels.squeeze().byte()).sum() /
                        (labels.size()[0] * (opt.patch_size**2)))
@@ -148,7 +161,7 @@ for epoch in range(opt.epochs):
             writer.add_scalars(str(k), {'train': v}, total_step)
 
         # clear batch variables from memory
-        del batch_img1, batch_img2, labels
+        del batch_img1, batch_img2, splited_img1, splited_img2, labels
 
     scheduler.step()
     logging.info("EPOCH {} TRAIN METRICS".format(epoch) + str(mean_train_metrics))
@@ -159,20 +172,31 @@ for epoch in range(opt.epochs):
     model.eval()
     with torch.no_grad():
         for batch_img1, batch_img2, labels in val_loader:
+            # Make quarter splited batch img (puzzle module)
+            splited_img1 = split(batch_img1)
+            splited_img2 = split(batch_img2)
+            
             # Set variables for training
             batch_img1 = batch_img1.float().to(dev)
             batch_img2 = batch_img2.float().to(dev)
             labels = labels.long().to(dev)
 
-            # Get predictions and calculate loss
-            cd_preds = model(batch_img1, batch_img2)
+            splited_img1 = splited_img1.float().to(dev)
+            splited_img2 = splited_img2.float().to(dev)
 
-            cd_loss = criterion(cd_preds, labels)
+            # Get predictions and calculate loss (merge module)
+            entire_preds = model(batch_img1, batch_img2) # entire_preds.shape -> tuple
+            splited_preds = model(splited_img1, splited_img2)
+            merged_preds = merge(splited_preds) # merged_preds.shape -> torchtensor
 
-            cd_preds = cd_preds[-1]
-            _, cd_preds = torch.max(cd_preds, 1)
+            alpha = 0.04 * float(epoch)
+
+            cd_loss = criterion(entire_preds, merged_preds, labels, alpha)
 
             # Calculate and log other batch metrics
+            cd_preds = entire_preds[-1]
+            _, cd_preds = torch.max(cd_preds, 1)
+
             cd_corrects = (100 *
                            (cd_preds.squeeze().byte() == labels.squeeze().byte()).sum() /
                            (labels.size()[0] * (opt.patch_size**2)))
@@ -195,7 +219,7 @@ for epoch in range(opt.epochs):
                 writer.add_scalars(str(k), {'val': v}, total_step)
 
             # clear batch variables from memory
-            del batch_img1, batch_img2, labels
+            del batch_img1, batch_img2, splited_img1, splited_img2, labels
 
         logging.info("EPOCH {} VALIDATION METRICS".format(epoch)+str(mean_val_metrics))
 
