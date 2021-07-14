@@ -17,6 +17,4 @@
   "weight_dir": "./outputs/",
   "log_dir": "./log/",
   "demo_dir": "/data/workspace/seonggon/ev21_phase2/SNUnet/datasets/demo/",
-  "source_dir": "/data/workspace/seonggon/ev21_phase2/SNUnet/datasets/CDData/subset/",
-  "target_dir": "/data/workspace/seonggon/ev21_phase2/SNUnet/datasets/SCData256/"
 }
