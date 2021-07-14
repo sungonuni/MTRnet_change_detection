@@ -15,7 +15,7 @@
 
 ## Train from scratch
     
-    python advent.py
+    python overlapTile.py
 
 ## Evaluate model performance
 
