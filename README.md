@@ -15,7 +15,7 @@
 
 ## Train from scratch
     
-    python train.py
+    python advent.py
 
 ## Evaluate model performance
 
