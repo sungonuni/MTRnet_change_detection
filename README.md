@@ -27,7 +27,7 @@
    
 ## Demo
 
-    python visualization.py
+    python demo.py
   
 ## compare data
 
