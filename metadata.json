@@ -12,8 +12,6 @@
   "epochs": 100,
   "batch_size": 4,
   "learning_rate": 5e-4,
-  "dataset_dir": "/data/workspace/seonggon/ev21_phase2/SNUnet/datasets/SCData/",
-  "crop_size": 128,
   "weight_dir": "./outputs/",
   "log_dir": "./log/",
   "demo_dir": "/data/workspace/seonggon/ev21_phase2/SNUnet/datasets/demo/",
