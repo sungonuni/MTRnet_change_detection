@@ -15,7 +15,7 @@
 
 ## Train from scratch
     
-    python train.py
+    python puzzleCAM.py
 
 ## Evaluate model performance
 
@@ -27,7 +27,7 @@
    
 ## Demo
 
-    python visualization.py
+    python demo.py
   
 ## compare data
 
