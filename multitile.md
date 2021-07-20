@@ -1,4 +1,4 @@
-# HR_ECAM
+# Multitile
 
 ## Requirements
 
@@ -15,7 +15,7 @@
 
 ## Train from scratch
     
-    python train.py
+    python multitile.py
 
 ## Evaluate model performance
 
