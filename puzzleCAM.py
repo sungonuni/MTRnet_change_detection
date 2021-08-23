@@ -7,6 +7,7 @@ from utils.helpers import (get_loaders, get_criterion,
                            set_metrics)
 from puzzleUtils.puzzleHelpers import (split, merge)
 
+
 import os
 import logging
 import json
@@ -32,7 +33,7 @@ writer = SummaryWriter(opt.log_dir + f'/{datetime.datetime.now().strftime("%Y%m%
 """
 Set up environment: define paths, download data, and set device
 """
-os.environ["CUDA_VISIBLE_DEVICES"] = "6,7"
+os.environ["CUDA_VISIBLE_DEVICES"] = "2"
 dev = torch.device('cuda:0' if torch.cuda.is_available() else 'cpu')
 logging.info('GPU AVAILABLE? ' + str(torch.cuda.is_available()))
 
@@ -49,7 +50,7 @@ def seed_torch(seed):
 seed_torch(seed=777)
 
 
-train_loader, val_loader = get_loaders(opt)
+train_loader, val_loader = get_loaders(opt) # temporally changed
 
 """
 Load Model or pretrained model
@@ -106,17 +107,14 @@ for epoch in range(opt.epochs):
         batch_iter = batch_iter+opt.batch_size
         total_step += 1
 
-        # Make quarter splited batch img (puzzle module)
-        splited_img1 = split(batch_img1)
-        splited_img2 = split(batch_img2)
-
         # Set variables for training
         batch_img1 = batch_img1.float().to(dev)
         batch_img2 = batch_img2.float().to(dev)
         labels = labels.long().to(dev)
 
-        splited_img1 = splited_img1.float().to(dev)
-        splited_img2 = splited_img2.float().to(dev)
+        # Make quarter splited batch img (puzzle module)
+        splited_img1 = split(batch_img1)
+        splited_img2 = split(batch_img2)
 
         # Zero the gradient
         optimizer.zero_grad()
@@ -128,7 +126,7 @@ for epoch in range(opt.epochs):
         merged_preds = merge(splited_preds) # merged_preds.shape -> torchtensor
         
         # alpha = 0.04 * float(epoch)
-        alpha = 1
+        alpha = 0.04 * float(epoch)
         
         cd_loss = criterion(entire_preds, merged_preds, labels, alpha) # must set get_criterion to 'puzzle'
         loss = cd_loss
@@ -172,24 +170,23 @@ for epoch in range(opt.epochs):
     model.eval()
     with torch.no_grad():
         for batch_img1, batch_img2, labels in val_loader:
-            # Make quarter splited batch img (puzzle module)
-            splited_img1 = split(batch_img1)
-            splited_img2 = split(batch_img2)
             
             # Set variables for training
             batch_img1 = batch_img1.float().to(dev)
             batch_img2 = batch_img2.float().to(dev)
             labels = labels.long().to(dev)
 
-            splited_img1 = splited_img1.float().to(dev)
-            splited_img2 = splited_img2.float().to(dev)
+            # Make quarter splited batch img (puzzle module)
+            splited_img1 = split(batch_img1)
+            splited_img2 = split(batch_img2)
 
             # Get predictions and calculate loss (merge module)
             entire_preds = model(batch_img1, batch_img2) # entire_preds.shape -> tuple
             splited_preds = model(splited_img1, splited_img2)
             merged_preds = merge(splited_preds) # merged_preds.shape -> torchtensor
 
-            alpha = 0.04 * float(epoch)
+            # alpha = 0.04 * float(epoch)
+            alpha = 1
 
             cd_loss = criterion(entire_preds, merged_preds, labels, alpha)
 
@@ -215,7 +212,7 @@ for epoch in range(opt.epochs):
             # log the batch mean metrics
             mean_val_metrics = get_mean_metrics(val_metrics)
 
-            for k, v in mean_train_metrics.items():
+            for k, v in mean_val_metrics.items():
                 writer.add_scalars(str(k), {'val': v}, total_step)
 
             # clear batch variables from memory
@@ -226,23 +223,20 @@ for epoch in range(opt.epochs):
         """
         Store the weights of good epochs based on validation results
         """
-        if ((mean_val_metrics['cd_precisions'] > best_metrics['cd_precisions'])
-                or
-                (mean_val_metrics['cd_recalls'] > best_metrics['cd_recalls'])
-                or
-                (mean_val_metrics['cd_f1scores'] > best_metrics['cd_f1scores'])):
+        if ((mean_val_metrics['cd_recalls'] > best_metrics['cd_recalls'])
+                or (mean_val_metrics['cd_f1scores'] > best_metrics['cd_f1scores'])):
 
             # Insert training and epoch information to metadata dictionary
             logging.info('updata the model')
             metadata['validation_metrics'] = mean_val_metrics
 
             # Save model(state_dict) and log
-            if not os.path.exists('./tmp'):
-                os.mkdir('./tmp')
-            with open('./tmp/metadata_epoch_' + str(epoch) + '.json', 'w') as fout:
+            if not os.path.exists('./tmp4puzzle'):
+                os.mkdir('./tmp4puzzle')
+            with open('./tmp4puzzle/metadata_epoch_' + str(epoch) + '.json', 'w') as fout:
                 json.dump(metadata, fout)
 
-            torch.save(model.state_dict(), './tmp/checkpoint_epoch_'+str(epoch)+'.pt')
+            torch.save(model.state_dict(), './tmp4puzzle/checkpoint_epoch_'+str(epoch)+'.pt')
 
             # comet.log_asset(upload_metadata_file_path)
             best_metrics = mean_val_metrics
@@ -251,3 +245,4 @@ for epoch in range(opt.epochs):
         print('An epoch finished.')
 writer.close()  # close tensor board
 print('Done!')
+
