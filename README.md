@@ -14,6 +14,10 @@ The experiment result shows that our method is effective to every candidate mode
 
 ![figure1](https://github.com/sungonuni/MTRnet_change_detection/blob/main/figure1.png)
 
+![figure2](https://github.com/sungonuni/MTRnet_change_detection/blob/main/figure2.png)
+
+![figure3](https://github.com/sungonuni/MTRnet_change_detection/blob/main/figure3.png)
+
 
 ## Requirement
 
