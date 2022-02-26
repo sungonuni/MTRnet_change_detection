@@ -1,4 +1,4 @@
-# MTRnet_change_detection
+# MTRnet
 
 ## Description
 This repository is implementation of MTRnet for Binary Change Detection in high resolution sattlelite imagery.
