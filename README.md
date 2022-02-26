@@ -1,4 +1,17 @@
-# HR_ECAM
+# MTRnet_change_detection
+
+## Description
+This repository is implementation of MTRnet for Binary Change Detection in high resolution sattlelite imagery.
+
+Since, optical satellites reached the space and humanity starts capturing the surface of the earth, change detection research has been studied. 
+Change detection is a task to identify the change of interest from multiple images which taken at the different time step. 
+Recently, change detection is actively researched with semantic segmentation approach in supervised manner along with rapidly developing deep learning techniques. 
+
+We propose combination of simple techniques to improve the performance of supervised change detection models. 
+To enhance the ability to capturing changed regions, we modify the architecture of supervised change detection models to get multi-scaled tiled input, and giving morphological guidance to the mod els. 
+Evaluation of our method is performed based on the Change Detection Dataset(CD) and LEVIR-CD Dataset. 
+The experiment result shows that our method is effective to every candidate models. 
+
 
 ## Requirements
 
