@@ -1,4 +1,4 @@
-# HR_ECAM
+# ADVENT version of MTRnet
 
 ## Requirements
 
