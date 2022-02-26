@@ -11,10 +11,7 @@ We propose combination of simple techniques to improve the performance of superv
 To enhance the ability to capturing changed regions, we modify the architecture of supervised change detection models to get multi-scaled tiled input, and giving morphological guidance to the mod els. 
 Evaluation of our method is performed based on the Change Detection Dataset(CD) and LEVIR-CD Dataset. 
 The experiment result shows that our method is effective to every candidate models. 
-
-
-## Requirements
-
+![figure1](https://github.com/sungonuni/MTRnet_change_detection/blob/main/figure1.png)
 - Python 3.8
 
 - Pytorch 1.8.1
