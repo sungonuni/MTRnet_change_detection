@@ -1,4 +1,4 @@
-# HR_ECAM
+# Puzzle version of MTRnet
 
 ## Requirements
 
